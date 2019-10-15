@@ -1,3 +1,7 @@
+# Script to mess around with User authenticated spotify API
+# For some reason, cannot authenticate with Google Chrome, so instead use Firefox
+# http://spotipy.readthedocs.io/en/latest/
+
 from pathlib import Path
 from spotipy.oauth2 import SpotifyClientCredentials
 import json
