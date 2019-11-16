@@ -19,10 +19,10 @@ username = "liltkrookie"
 scope = "user-top-read"
 sort = "tempo"
 
-
+print(infile[0])
 # Send crendetials and ping Spotify API
-token = util.prompt_for_user_token(username,scope,client_id='8d3383fc5c434af5bf40fb7b2915c618',client_secret=infile[1],redirect_uri='http://localhost:8888/callback')
-client_credentials_manager = SpotifyClientCredentials(client_id='8d3383fc5c434af5bf40fb7b2915c618', client_secret=infile[1])
+token = util.prompt_for_user_token(username,scope,client_id='8d3383fc5c434af5bf40fb7b2915c618',client_secret=infile[0],redirect_uri='http://localhost:8888/callback')
+client_credentials_manager = SpotifyClientCredentials(client_id='8d3383fc5c434af5bf40fb7b2915c618', client_secret=infile[0])
 sp = spotipy.Spotify(auth=token)
 
 playlistdata = sp.current_user_top_tracks(limit=50, offset=0, time_range='medium_term')
@@ -58,7 +58,7 @@ song_metadata = pd.DataFrame.from_records(songdata, columns=songlabels)
 # print(song_metadata)
 # DataFrame merge
 export = pd.merge(song_metadata,data, how = 'outer', on =['uri'])
-writer = pd.ExcelWriter('top_played_songs.xlsx')
+writer = pd.ExcelWriter(directory / 'top_played_songs.xlsx')
 export.to_excel(writer,'Sheet1')
 writer.save()
 
