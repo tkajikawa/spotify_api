@@ -2,3 +2,5 @@
 !*.py
 !*.md
 !*.gitignore
+!*.r
+
