@@ -1,0 +1,111 @@
+---
+title: "Chixtape 5 Spotify API -- R Data Analysis"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r, include=FALSE}
+#----------------------------------------------#
+#---------------Spotify API in R --------------#
+#----------------------------------------------#
+# Written by: Trent Kajikawa
+# Purpose: Let's do an analysis comparing Tory Lanez's Chixtape 5 and the samples used
+# Inspired by: https://msmith7161.github.io/what-is-speechiness/
+#              https://developer.spotify.com/documentation/web-api/reference-beta/#category-tracks
+
+# Clean workspace
+rm(list = ls())
+
+# If we don't have spotifyr, make sure to install
+# install.packages('spotifyr')
+library(spotifyr)
+library(ggplot2)
+library(httpuv)
+library(dplyr)
+# Let's set up the authentication
+Sys.setenv(SPOTIFY_CLIENT_ID = '8d3383fc5c434af5bf40fb7b2915c618')
+fileName <- 'credentials.txt'
+Sys.setenv(SPOTIFY_CLIENT_SECRET = readChar(fileName, file.info(fileName)$size))
+access_token <- get_spotify_access_token()
+import <- get_playlist_audio_features("liltkrookie", "3Lb30qkvIF8snmxpUjkqP8")
+
+# Get metadata of playlist
+library(vtable)
+
+# Create a flag for Chixtape (factor)
+import$chixtape <- 0
+import$chixtape[import$track.album.name=='Chixtape 5'] <- 1
+
+# Parse down the data we want for analysis
+var_list <- c("danceability"
+              ,"energy"
+              ,"key"
+              ,"loudness"
+              ,"mode"
+              ,"speechiness"
+              ,"acousticness"
+              ,"instrumentalness"
+              ,"liveness"
+              ,"valence"
+              ,"tempo"
+              ,"track.id"
+              ,"time_signature"
+              ,"track.popularity"
+              ,"track.track_number"
+              ,"track.duration_ms"
+              ,"track.artists"
+              ,"track.name"
+              ,"track.album.name"
+              ,"chixtape")
+analysis_file = import[var_list]
+
+# Split the datat if we want
+chixtape_data <- analysis_file[which (analysis_file$track.album.name=='Chixtape 5'),]
+sample_data <- analysis_file[which (analysis_file$track.album.name!='Chixtape 5'),]
+```
+
+# Introduction
+Tory Lanez dropped his heavily advertised _Chixtape 5_ in mid-November 2019. According to [Genius](https://genius.com/a/for-the-record-tory-lanez-talks-chixtape-5-samples-confirms-theres-no-beef-with-meek-mill), he's had to clear between 30 to 40 samples. Here I juxtapose audio features from the tracks on _Chixtape 5_ with their most recognizable samples using data from the [Spotify API](https://developer.spotify.com/documentation/web-api/reference-beta/#category-tracks). Check out the playlist where I've aggregated the songs here: [Chixtape Analysis](https://open.spotify.com/playlist/3Lb30qkvIF8snmxpUjkqP8?si=LQBAYD-tRKe6csvO0EaNbA). See the Appendix for technical notes, assumptions, and detailed explanations.
+
+This project is unique given the fact that we can compare multiple songs on a single album with their samples -- all of which were originally released in the early 00s. As a result, we have two sets of 14 songs. One is the Chixtape set and the other is comprised of samples. The track names are in the Appendix (Table 1). I've also included the popularity rankings that Spotify assigned to each record as of 11-16-2019. A quick aside, "Foolish" by Ashanti and "You" by Lloyd feat. Lil Wayne are the most popular samples that Tory Lanez used for _Chixtape 5_, as of mid-November 2019. Fun fact -- this is the first time I'm using R and RMarkdown to write up any type of data analysis!
+
+## Descriptive Statistics
+Below I provide some basic descriptive statistics in the form of some boxplots. The **chixtape** x-axis variable refers to which set. For more information on the Spotify API variables, feel free to check out the data dictionary associated with the API above.
+
+Immediately what stands out to me is the drastic difference in danceability, energy, valence, and loudness between _Chixtape 5_ and its samples. If it is any indication, nearly all of the samples are in my constant rotation of workout songs. Perhaps unsurprisingly, Tory Lanez decided to alter the underlying tone of the samples to fit his singing and rapping style. In exchange for lower energy and loudness, Tory increased the speechiness relative to the 00s songs.
+
+Tempo, liveness, acousticneess, and track duration are nearly identical between the two sets. This is probably one of the more unexpected findings from my initial exploratory analysis. Influenced by the artists before him, Tory kept the overall structure, beat, and timing constant. Who can blame him, these 2000s songs are hits for a reason!
+
+I'll continue to dive into the data by joining _Chixtape 5_ songs with their respective samples and looking at matched differences.
+
+```{r, echo=FALSE, results = 'asis'}
+# Basic plots
+par(mfrow=c(2,5))
+boxplot(danceability~chixtape, data=import)
+boxplot(energy~chixtape, data=import)
+boxplot(valence~chixtape, data=import)
+boxplot(tempo~chixtape, data=import)
+boxplot(speechiness~chixtape, data=import)
+boxplot(loudness~chixtape, data=import)
+boxplot(liveness~chixtape, data=import)
+boxplot(acousticness~chixtape, data=import)
+boxplot(track.duration_ms~chixtape, data=import)
+boxplot(track.popularity~chixtape, data=import)
+```
+
+## Appendix
+Some technical notes: _Chixtape 5_ Skits & Outro are omittted; "Falsetto" and "I Luv Your Girl" by The Dream were both included in the samples list because of Tory's segue (?) song "Luv Ya Gyal // Love Sounds"; "Broken Promises" does not have an associated sample since it pulls the beat from another song on _Chixtape 5_ ("The Take")
+
+### Table 1
+
+```{r, echo=FALSE, message=FALSE,results = 'asis'}
+# Order data by popularity
+attach(import)
+import <- import[order(track.popularity),]
+library(knitr)
+library(kableExtra)
+import %>% select(track.name, track.popularity, track.album.name) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+```

@@ -14,6 +14,7 @@ rm(list = ls())
 library(spotifyr)
 library(ggplot2)
 library(httpuv)
+library(dplyr)
 # Let's set up the authentication
 Sys.setenv(SPOTIFY_CLIENT_ID = '8d3383fc5c434af5bf40fb7b2915c618')
 fileName <- 'spotify_api/credentials.txt'
@@ -24,24 +25,33 @@ import <- get_playlist_audio_features("liltkrookie", "3Lb30qkvIF8snmxpUjkqP8")
 # Get metadata of playlist
 library(vtable)
 
-# Split the datat if we want
-chixtape_data <- import[which (import$track.album.name=='Chixtape 5'),]
-sample_data <- import[which (import$track.album.name!='Chixtape 5'),]
-
 # Create a flag for Chixtape (factor)
 import$chixtape <- 0
 import$chixtape[import$track.album.name=='Chixtape 5'] <- 1
 
-# Basic plotst
-par(mfrow=c(2,5))
-boxplot(danceability~chixtape, data=import)
-boxplot(energy~chixtape, data=import)
-boxplot(valence~chixtape, data=import)
-boxplot(tempo~chixtape, data=import)
-boxplot(speechiness~chixtape, data=import)
-boxplot(loudness~chixtape, data=import)
-boxplot(liveness~chixtape, data=import)
-# boxplot(instrumentalness~chixtape, data=import)
-boxplot(acousticness~chixtape, data=import)
-boxplot(track.duration_ms~chixtape, data=import)
-boxplot(track.popularity~chixtape, data=import)
+# Parse down the data we want for analysis
+var_list <- c("danceability"
+              ,"energy"
+              ,"key"
+              ,"loudness"
+              ,"mode"
+              ,"speechiness"
+              ,"acousticness"
+              ,"instrumentalness"
+              ,"liveness"
+              ,"valence"
+              ,"tempo"
+              ,"track.id"
+              ,"time_signature"
+              ,"track.popularity"
+              ,"track.track_number"
+              ,"track.duration_ms"
+              ,"track.artists"
+              ,"track.name"
+              ,"track.album.name"
+              ,"chixtape")
+analysis_file = import[var_list]
+
+# Split the datat if we want
+chixtape_data <- analysis_file[which (analysis_file$track.album.name=='Chixtape 5'),]
+sample_data <- analysis_file[which (analysis_file$track.album.name!='Chixtape 5'),]
