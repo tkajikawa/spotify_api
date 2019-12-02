@@ -2,7 +2,8 @@
 title: "Chixtape 5 Spotify API -- R Data Analysis"
 output:
   html_document:
-    df_print: paged
+    theme: null
+    highlight: null
 ---
 
 ```{r, include=FALSE}
@@ -23,6 +24,8 @@ library(spotifyr)
 library(ggplot2)
 library(httpuv)
 library(dplyr)
+library(knitr)
+library(kableExtra)
 # Let's set up the authentication
 Sys.setenv(SPOTIFY_CLIENT_ID = '8d3383fc5c434af5bf40fb7b2915c618')
 fileName <- 'credentials.txt'
@@ -99,12 +102,10 @@ Some technical notes: _Chixtape 5_ Skits & Outro are omittted; "Falsetto" and "I
 
 ### Table 1
 
-```{r, echo=FALSE, message=FALSE,results = 'asis'}
+```{r, echo=FALSE, message=FALSE,results = 'asis', warnings = FALSE}
 # Order data by popularity
 attach(import)
 import <- import[order(track.popularity),]
-library(knitr)
-library(kableExtra)
 import %>% select(track.name, track.popularity, track.album.name) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
